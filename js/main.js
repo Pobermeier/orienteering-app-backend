@@ -1,15 +1,45 @@
-const mymap = L.map('map').setView([48.2082, 16.3738], 13);
+// https://orientierung.herokuapp.com
 
-L.tileLayer(
-  'https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoicG9iZXI4NyIsImEiOiJja2NhOXlvbjYxcW5yMnRxcDBkMDNrYXIwIn0.UaUjxYt6cPkzxNOzwIgIYw',
-  {
-    attribution:
-      'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
-    maxZoom: 18,
-    id: 'mapbox/streets-v11',
-    tileSize: 512,
-    zoomOffset: -1,
-    accessToken:
-      'pk.eyJ1IjoicG9iZXI4NyIsImEiOiJja2NhOXlvbjYxcW5yMnRxcDBkMDNrYXIwIn0.UaUjxYt6cPkzxNOzwIgIYw',
-  },
-).addTo(mymap);
+(function () {
+  // Global App State
+  const state = {
+    initialMapCoords: [48.2082, 16.3738],
+    initialMapZoomLevel: 13,
+    currentMapCoords: null,
+    groups: null,
+  };
+
+  window.addEventListener('load', () => {
+    // Init Leaflet map and get current position
+    navigator.geolocation.getCurrentPosition((position) => {
+      const currentPosition = [
+        position.coords.latitude,
+        position.coords.longitude,
+      ];
+
+      state.currentMapCoords = currentPosition
+        ? currentPosition
+        : state.initialMapCoords;
+
+      // Init leaflet map once when "Manage Locations" tab is clicked
+      document.getElementById('locations-tab').addEventListener(
+        'click',
+        () => {
+          setTimeout(() => {
+            // Init Leaflet Map
+            const mymap = L.map('map').setView(
+              state.currentMapCoords,
+              state.initialMapZoomLevel,
+            );
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+              attribution:
+                '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            }).addTo(mymap);
+          }, 500);
+        },
+        { once: true },
+      );
+    });
+  });
+})();
