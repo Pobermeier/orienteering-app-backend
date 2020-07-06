@@ -7,6 +7,7 @@
     groups: null,
     selectedGroup: null,
     selectedGroupLocations: null,
+    allMarkers: [],
   };
 
   // Server base url
@@ -24,7 +25,6 @@
   window.addEventListener('load', async () => {
     // Get initial data
     state.groups = await getAllGroups();
-    console.log(state.groups);
     updateGroupUI(state.groups);
 
     // Add Group functionality
@@ -42,6 +42,11 @@
         await deleteGroup(e.target.dataset.id);
         state.groups = await getAllGroups();
         updateGroupUI(state.groups);
+        state.allMarkers.forEach((marker) => {
+          mymap.removeLayer(marker);
+        });
+
+        state.allMarkers = [];
       }
     });
 
@@ -52,7 +57,7 @@
       state.selectedGroupLocations = await getGroupLocations(
         state.selectedGroup,
       );
-      console.log(state.selectedGroupLocations);
+
       updateMapUI(state.selectedGroupLocations);
     });
 
@@ -84,7 +89,6 @@
             }).addTo(mymap);
 
             mymap.addEventListener('click', async (e) => {
-              console.log(e);
               if (state.selectedGroup) {
                 await createGroupLocation(
                   state.selectedGroup,
@@ -211,20 +215,26 @@
   }
 
   function updateMapUI(locations) {
-    console.log(L);
+    state.allMarkers.forEach((marker) => {
+      mymap.removeLayer(marker);
+    });
+
+    state.allMarkers = [];
 
     locations.forEach((location, index) => {
-      L.marker([location.lat, location.lng])
+      const marker = L.marker([location.lat, location.lng])
         .addEventListener('click', async () => {
           const group = state.selectedGroup;
           await deleteGroupLocation(group, index);
           state.selectedGroupLocations = await getGroupLocations(
             state.selectedGroup,
           );
-          console.log(state.selectedGroupLocations);
+
           updateMapUI(state.selectedGroupLocations);
         })
         .addTo(mymap);
+
+      state.allMarkers.push(marker);
     });
   }
 })();
