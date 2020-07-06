@@ -211,8 +211,20 @@
   }
 
   function updateMapUI(locations) {
-    locations.forEach((location) => {
-      L.marker([location.lat, location.lng]).addTo(mymap);
+    console.log(L);
+
+    locations.forEach((location, index) => {
+      L.marker([location.lat, location.lng])
+        .addEventListener('click', async () => {
+          const group = state.selectedGroup;
+          await deleteGroupLocation(group, index);
+          state.selectedGroupLocations = await getGroupLocations(
+            state.selectedGroup,
+          );
+          console.log(state.selectedGroupLocations);
+          updateMapUI(state.selectedGroupLocations);
+        })
+        .addTo(mymap);
     });
   }
 })();
