@@ -9,19 +9,76 @@
     integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css"
     integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ=="
-    crossorigin="true" />
+    crossorigin="" />
   <link rel="stylesheet" href="./css/all.min.css">
   <link rel="stylesheet" href="./css/style.css">
 </head>
 
 <body>
   <nav class="navbar navbar-dark bg-dark">
-    <a class="navbar-brand" href="#">
-      <img src="/docs/4.5/assets/brand/bootstrap-solid.svg" width="30" height="30" class="d-inline-block align-top"
-        alt="" loading="lazy">
-      Bootstrap
-    </a>
+    <div class="container">
+      <a class="navbar-brand" href="/">
+        <i class="fas fa-map-signs"></i>
+        Orienteering-App Admin
+      </a>
+    </div>
   </nav>
+  <main>
+    <div class="container mt-3">
+      <ul class="nav nav-tabs" id="myTab" role="tablist">
+        <li class="nav-item" role="presentation">
+          <a class="nav-link active" id="home-tab" data-toggle="tab" href="#home" role="tab" aria-controls="home"
+            aria-selected="true">Home</a>
+        </li>
+        <li class="nav-item" role="presentation">
+          <a class="nav-link" id="groups-tab" data-toggle="tab" href="#groups" role="tab" aria-controls="groups"
+            aria-selected="false">Manage Groups</a>
+        </li>
+        <li class="nav-item" role="presentation">
+          <a class="nav-link" id="locations-tab" data-toggle="tab" href="#locations" role="tab"
+            aria-controls="locations" aria-selected="false">Manage Locations</a>
+        </li>
+      </ul>
+      <div class="tab-content" id="myTabContent">
+
+        <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
+          <h3 class="mt-3">Welcome to the Admin-Tool!</h3>
+          <p>Manage groups and create locations for them...</p>
+        </div>
+
+        <div class="tab-pane fade" id="groups" role="tabpanel" aria-labelledby="groups-tab">
+          <h3 class="mt-3">Group Management</h3>
+          <p>Here you can get an overview of all groups, create new groups & delete existing groups...</p>
+          <h4>Add New Group</h4>
+          <form method="post" id="add-group-form" class="mt-3">
+            <div class="form-group">
+              <label for="name">Group Name</label>
+              <input type="text" name="name" id="name" class="form-control">
+            </div>
+            <button type="submit" class="btn btn-primary">Add Group</button>
+          </form>
+          <h4 class="mt-5">All Groups</h4>
+          <div id="group-list"></div>
+        </div>
+
+        <div class="tab-pane fade" id="locations" role="tabpanel" aria-labelledby="locations-tab">
+          <h3 class="mt-3">Location Management</h3>
+          <p>Here you can get an overview of all locations for a given group, create new locations & delete existing
+            locations...</p>
+          <div class="form-group">
+            <label for="name"><strong>Choose group to manage locations for:</strong></label>
+            <select name="group-to-manage" id="group-to-manage" class="form-control">
+              <option value="0">Choose a group...</option>
+            </select>
+          </div>
+          <div id="map" class="mt-3">
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
 
   <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
     integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous">
@@ -34,7 +91,7 @@
   </script>
   <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"
     integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew=="
-    crossorigin="true"></script>
+    crossorigin=""></script>
   <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
   <script src="./js/main.js"></script>
 </body>
