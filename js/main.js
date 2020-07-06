@@ -5,6 +5,8 @@
     initialMapZoomLevel: 13,
     currentMapCoords: null,
     groups: null,
+    selectedGroup: null,
+    selectedGroupLocations: null,
   };
 
   // Server base url
@@ -14,12 +16,16 @@
   const addGroupForm = document.querySelector('#add-group-form');
   const groupName = document.querySelector('#name');
   const groupList = document.querySelector('#group-list');
+  const groupSelect = document.querySelector('#group-to-manage');
+
+  // Leaflet map reference
+  let mymap;
 
   window.addEventListener('load', async () => {
     // Get initial data
     state.groups = await getAllGroups();
     console.log(state.groups);
-    updateUI(state.groups);
+    updateGroupUI(state.groups);
 
     // Add Group functionality
     addGroupForm.addEventListener('submit', async (e) => {
@@ -27,7 +33,7 @@
       await createGroup(groupName.value);
       groupName.value = '';
       state.groups = await getAllGroups();
-      updateUI(state.groups);
+      updateGroupUI(state.groups);
     });
 
     // Delete Group Functionality
@@ -35,8 +41,19 @@
       if (e.target.classList.contains('btn')) {
         await deleteGroup(e.target.dataset.id);
         state.groups = await getAllGroups();
-        updateUI(state.groups);
+        updateGroupUI(state.groups);
       }
+    });
+
+    // Group Selection to view / create / delete locations
+    groupSelect.addEventListener('change', async (e) => {
+      const selectedGroup = groupSelect.value;
+      state.selectedGroup = selectedGroup;
+      state.selectedGroupLocations = await getGroupLocations(
+        state.selectedGroup,
+      );
+      console.log(state.selectedGroupLocations);
+      updateMapUI(state.selectedGroupLocations);
     });
 
     // Init Leaflet map and get current position
@@ -56,7 +73,7 @@
         () => {
           setTimeout(() => {
             // Init Leaflet Map
-            const mymap = L.map('map').setView(
+            mymap = L.map('map').setView(
               state.currentMapCoords,
               state.initialMapZoomLevel,
             );
@@ -65,6 +82,23 @@
               attribution:
                 '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
             }).addTo(mymap);
+
+            mymap.addEventListener('click', async (e) => {
+              console.log(e);
+              if (state.selectedGroup) {
+                await createGroupLocation(
+                  state.selectedGroup,
+                  'test',
+                  e.latlng.lat,
+                  e.latlng.lng,
+                );
+
+                state.selectedGroupLocations = await getGroupLocations(
+                  state.selectedGroup,
+                );
+                updateMapUI(state.selectedGroupLocations);
+              }
+            });
           }, 500);
         },
         { once: true },
@@ -72,6 +106,7 @@
     });
   });
 
+  // Group-related functions
   async function getAllGroups() {
     const groups = (await axios(`${serverBaseURI}/group`)).data.groups;
     return groups;
@@ -102,7 +137,40 @@
     }
   }
 
-  function updateUI(groupData) {
+  // Location-related functions
+  async function createGroupLocation(groupId, name, lat, lng) {
+    try {
+      await axios({
+        method: 'post',
+        url: `${serverBaseURI}/group/${groupId}/place`,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        data: { name, lat, lng },
+      });
+      console.log('Location successfully created!');
+    } catch (error) {
+      console.error(error.message);
+    }
+  }
+
+  async function getGroupLocations(groupId) {
+    const locations = (await axios(`${serverBaseURI}/group/${groupId}/place`))
+      .data.places;
+    return locations;
+  }
+
+  async function deleteGroupLocation(groupId, index) {
+    try {
+      await axios.delete(`${serverBaseURI}/group/${groupId}/place/${index}`);
+      console.log('Location successfully deleted!');
+    } catch (error) {
+      console.error(error.message);
+    }
+  }
+
+  // UI-related Functions
+  function updateGroupUI(groupData) {
     groupList.innerHTML = `
     <table class="table table-striped table-dark mt-3">
       <thead>
@@ -129,5 +197,22 @@
       </tbody>
     </table>
     `;
+
+    groupSelect.innerHTML = `
+      <option value="0" disabled selected>Choose a group...</option>
+      ${groupData
+        .map((group) => {
+          return `
+        <option value=${group.id}>${group.name}</option>
+        `;
+        })
+        .join('')}
+    `;
+  }
+
+  function updateMapUI(locations) {
+    locations.forEach((location) => {
+      L.marker([location.lat, location.lng]).addTo(mymap);
+    });
   }
 })();
